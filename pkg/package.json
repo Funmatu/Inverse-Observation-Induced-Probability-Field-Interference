@@ -1,0 +1,19 @@
+{
+  "name": "Inverse-Observation-Induced-Probability-Field-Interference",
+  "type": "module",
+  "collaborators": [
+    "Funmatu <funmatu@gmail.com>"
+  ],
+  "description": "A dual-runtime computation core for WebAssembly and Python, powered by Rust.",
+  "version": "0.1.0",
+  "files": [
+    "inverse_observation_induced_probability_field_interference_bg.wasm",
+    "inverse_observation_induced_probability_field_interference.js",
+    "inverse_observation_induced_probability_field_interference.d.ts"
+  ],
+  "main": "inverse_observation_induced_probability_field_interference.js",
+  "types": "inverse_observation_induced_probability_field_interference.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

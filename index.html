@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6D Quantum SLAM Visualization</title>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            background: #000; 
+            color: #eee; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            overflow: hidden; /* Canvas fits screen */
+        }
+        
+        /* Fullscreen Canvas */
+        canvas { 
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+        }
+
+        /* UI Overlay Container */
+        .overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 350px;
+            padding: 20px;
+            background: rgba(10, 10, 20, 0.85); /* Semi-transparent glass */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        h1 { margin: 0 0 10px 0; font-size: 1.2rem; font-weight: 600; color: #fff; }
+        p { font-size: 0.9rem; color: #ccc; line-height: 1.5; margin-bottom: 15px; }
+        
+        .section-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+        }
+
+        /* Controls */
+        .control-group { margin-bottom: 15px; }
+        .control-label { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 5px; }
+        input[type="range"] { width: 100%; cursor: pointer; accent-color: #00ff88; }
+
+        /* Legend */
+        .legend-item { display: flex; align-items: center; margin-bottom: 8px; font-size: 0.9rem; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 10px; display: inline-block; }
+        
+        .legend-white { background: #fff; box-shadow: 0 0 5px #fff; }
+        .legend-green { background: #00ff88; box-shadow: 0 0 8px #00ff88; }
+        .legend-ripple { 
+            background: radial-gradient(circle, transparent 30%, #444 40%, transparent 50%); 
+            border: 1px solid #555;
+        }
+
+        /* Button */
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(45deg, #0070f3, #00a6ff);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+        button:hover { opacity: 0.9; }
+        button:disabled { background: #444; color: #888; cursor: not-allowed; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="overlay">
+        <h1>6D Quantum SLAM</h1>
+        <p>
+            An experimental visualization of <b>Inverse Observation</b> theory. 
+            Instead of filtering points, we model the environment as a "Probability Field" of observers.
+        </p>
+
+        <div class="section-title">Interference Controls</div>
+        
+        <div class="control-group">
+            <div class="control-label">
+                <span>Wave Number ($k$)</span>
+                <span id="val-wave">80.0</span>
+            </div>
+            <input type="range" id="input-wave" min="1" max="200" value="80" step="1">
+            <p style="font-size: 0.8rem; margin: 0; color: #888;">Higher $k$ = Sharper Precision (Less Uncertainty)</p>
+        </div>
+
+        <div class="control-group">
+            <div class="control-label">
+                <span>Feedback Strength ($\alpha$)</span>
+                <span id="val-feedback">0.90</span>
+            </div>
+            <input type="range" id="input-feedback" min="0" max="0.99" value="0.90" step="0.01">
+            <p style="font-size: 0.8rem; margin: 0; color: #888;">Time-based stabilization (Tenet Effect)</p>
+        </div>
+
+        <div class="section-title">Legend (What you see)</div>
+        <div class="legend-item">
+            <span class="dot legend-white"></span>
+            <span><b>True Position</b> (Ground Truth)</span>
+        </div>
+        <div class="legend-item">
+            <span class="dot legend-green"></span>
+            <span><b>Estimated Probability</b> (Quantum Collapse)</span>
+        </div>
+        <div class="legend-item">
+            <span class="dot legend-ripple"></span>
+            <span><b>Interference Waves</b> (Uncertainty)</span>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <button id="start-btn">Initialize Quantum Field</button>
+        </div>
+    </div>
+    
+    <canvas id="quantum-canvas"></canvas>
+    
+    <script type="module" src="./index.js"></script>
+</body>
+</html>
