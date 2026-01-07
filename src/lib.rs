@@ -270,7 +270,6 @@ impl QuantumRenderer {
             source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Borrowed(SHADER_SOURCE)),
         });
 
-        // 【修正】ここで正しい BindGroupLayoutEntry を使用するように変更
         let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             label: Some("Compute Bind Group Layout"),
             entries: &[
@@ -388,6 +387,7 @@ impl QuantumRenderer {
             decay_factor: 5.0,
             feedback_strength: 0.90,
             num_landmarks: self.landmarks.len() as u32,
+            _pad: 0,
             camera_pos: self.camera_pos,
         };
         self.queue.write_buffer(&self.uniform_buffer, 0, bytemuck::bytes_of(&uniforms));
