@@ -169,8 +169,13 @@ pub struct QuantumRenderer {
     start_time: f64,
     frame_count: u64,
     
+    // Physics State
     landmarks: Vec<Landmark>,
     camera_pos: [f32; 2],
+    
+    // Interactive Parameters
+    pub wave_number: f32,
+    pub feedback_strength: f32,
     
     width: u32,
     height: u32,
@@ -203,19 +208,11 @@ impl QuantumRenderer {
         let (device, queue) = adapter.request_device(&wgpu::DeviceDescriptor {
             label: Some("Quantum Device"),
             required_features: wgpu::Features::empty(),
-            required_limits: wgpu::Limits::default(),
+            required_limits: adapter.limits(),
             memory_hints: wgpu::MemoryHints::default(),
         }, None).await.map_err(|e| e.to_string())?;
 
         let surface_caps = surface.get_capabilities(&adapter);
-        // let surface_format = surface_caps.formats.iter()
-        //     .copied()
-        //     .find(|f: &wgpu::TextureFormat| f.is_srgb())
-        //     .unwrap_or(surface_caps.formats[0]);
-        
-        // サーフェスのフォーマット選択ロジックを変更
-        // 以前のロジック: sRGBを探す -> BGRAが選ばれることが多い
-        // 今回のロジック: Compute Shaderの出力(Rgba8Unorm)に合わせて、サーフェスもRgba8Unormを強制する
         let surface_format = surface_caps.formats.iter()
             .copied()
             .find(|f| *f == wgpu::TextureFormat::Rgba8Unorm)
@@ -279,7 +276,6 @@ impl QuantumRenderer {
         let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             label: Some("Compute Bind Group Layout"),
             entries: &[
-                // Uniforms
                 wgpu::BindGroupLayoutEntry {
                     binding: 0,
                     visibility: wgpu::ShaderStages::COMPUTE,
@@ -290,7 +286,6 @@ impl QuantumRenderer {
                     },
                     count: None,
                 },
-                // Landmarks
                 wgpu::BindGroupLayoutEntry {
                     binding: 1,
                     visibility: wgpu::ShaderStages::COMPUTE,
@@ -301,7 +296,6 @@ impl QuantumRenderer {
                     },
                     count: None,
                 },
-                // Input Texture (Prev Frame)
                 wgpu::BindGroupLayoutEntry {
                     binding: 2,
                     visibility: wgpu::ShaderStages::COMPUTE,
@@ -312,7 +306,6 @@ impl QuantumRenderer {
                     },
                     count: None,
                 },
-                // Output Texture (Current Frame)
                 wgpu::BindGroupLayoutEntry {
                     binding: 3,
                     visibility: wgpu::ShaderStages::COMPUTE,
@@ -366,7 +359,19 @@ impl QuantumRenderer {
             camera_pos: [0.0, 0.0],
             width,
             height,
+            // デフォルトパラメータ
+            wave_number: 80.0,
+            feedback_strength: 0.90,
         })
+    }
+
+    // JSから動的にパラメータを変更するためのセッター
+    pub fn set_wave_number(&mut self, val: f32) {
+        self.wave_number = val;
+    }
+
+    pub fn set_feedback_strength(&mut self, val: f32) {
+        self.feedback_strength = val;
     }
 
     pub fn update(&mut self) {
@@ -390,9 +395,10 @@ impl QuantumRenderer {
         let uniforms = Uniforms {
             resolution: [self.width as f32, self.height as f32],
             time: t as f32,
-            wave_number: 80.0,
+            // メンバ変数の値を使用
+            wave_number: self.wave_number,
             decay_factor: 5.0,
-            feedback_strength: 0.90,
+            feedback_strength: self.feedback_strength,
             num_landmarks: self.landmarks.len() as u32,
             _pad: 0,
             camera_pos: self.camera_pos,
