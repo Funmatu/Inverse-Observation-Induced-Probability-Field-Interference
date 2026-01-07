@@ -1,4 +1,4 @@
-// 【修正】Rust 1.78+ と PyO3 0.20 の互換性警告をプロジェクトレベルで抑制
+// Rust 1.78+ と PyO3 0.20 の互換性警告をプロジェクトレベルで抑制
 #![allow(non_local_definitions)]
 
 use serde::{Serialize, Deserialize};
@@ -23,17 +23,14 @@ pub struct Landmark {
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Pod, Zeroable)]
 pub struct Uniforms {
-    pub resolution: [f32; 2],  // Offset: 0
-    pub time: f32,             // Offset: 8
-    pub wave_number: f32,      // Offset: 12
-    pub decay_factor: f32,     // Offset: 16
-    pub feedback_strength: f32,// Offset: 20
-    pub num_landmarks: u32,    // Offset: 24
-    
-    // WGSLのvec2アライメント(8byte)に合わせるためのパディング
-    pub _pad: u32,             // Offset: 28 (4 bytes padding)
-    
-    pub camera_pos: [f32; 2],  // Offset: 32
+    pub resolution: [f32; 2],
+    pub time: f32,
+    pub wave_number: f32,
+    pub decay_factor: f32,
+    pub feedback_strength: f32,
+    pub num_landmarks: u32,
+    pub _pad: u32, // WGSLのアライメント(8byte)調整用パディング
+    pub camera_pos: [f32; 2],
 }
 
 // ============================================================================
@@ -206,13 +203,22 @@ impl QuantumRenderer {
         let (device, queue) = adapter.request_device(&wgpu::DeviceDescriptor {
             label: Some("Quantum Device"),
             required_features: wgpu::Features::empty(),
-            required_limits: wgpu::Limits::downlevel_defaults(),
+            required_limits: wgpu::Limits::default(),
+            memory_hints: wgpu::MemoryHints::default(),
         }, None).await.map_err(|e| e.to_string())?;
 
         let surface_caps = surface.get_capabilities(&adapter);
+        // let surface_format = surface_caps.formats.iter()
+        //     .copied()
+        //     .find(|f: &wgpu::TextureFormat| f.is_srgb())
+        //     .unwrap_or(surface_caps.formats[0]);
+        
+        // サーフェスのフォーマット選択ロジックを変更
+        // 以前のロジック: sRGBを探す -> BGRAが選ばれることが多い
+        // 今回のロジック: Compute Shaderの出力(Rgba8Unorm)に合わせて、サーフェスもRgba8Unormを強制する
         let surface_format = surface_caps.formats.iter()
             .copied()
-            .find(|f: &wgpu::TextureFormat| f.is_srgb())
+            .find(|f| *f == wgpu::TextureFormat::Rgba8Unorm)
             .unwrap_or(surface_caps.formats[0]);
 
         let config = wgpu::SurfaceConfiguration {
@@ -330,8 +336,9 @@ impl QuantumRenderer {
             label: Some("Compute Pipeline"),
             layout: Some(&pipeline_layout),
             module: &shader,
-            entry_point: "main",
+            entry_point: Some("main"),
             compilation_options: wgpu::PipelineCompilationOptions::default(), 
+            cache: None,
         });
 
         let landmarks = vec![

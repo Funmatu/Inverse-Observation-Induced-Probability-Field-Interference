@@ -28,11 +28,10 @@ bytemuck = { version = "1.16", features = ["derive"] }
 pollster = "0.3"
 rand = "0.8"
 
-# 【修正】WASMビルドでの乱数生成エラーを回避するため、getrandomの"js"機能を有効化
 getrandom = { version = "0.2", features = ["js"] }
 
 # --- Graphics / Compute (WGPU) ---
-wgpu = "0.20"
+wgpu = "23.0"
 
 # --- Feature: WebAssembly ---
 wasm-bindgen = { version = "0.2", optional = true }
