@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nx-compute-rs Demo</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; }
+        h1 { border-bottom: 2px solid #eee; padding-bottom: 0.5rem; }
+        .card { border: 1px solid #ddd; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        button { background-color: #0070f3; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 5px; cursor: pointer; font-size: 1rem; }
+        button:hover { background-color: #005bb5; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        #output { margin-top: 1rem; padding: 1rem; background: #f5f5f5; border-radius: 5px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>nx-compute-rs</h1>
+    <p>R&D Dual-Runtime Architecture Proof of Concept.</p>
+    
+    <div class="card">
+        <h3>WebAssembly Computation</h3>
+        <p>Run the rigorous Rust backend directly in your browser.</p>
+        <button id="run-btn" disabled>Loading WASM...</button>
+        <div id="output">Waiting for input...</div>
+    </div>
+
+    <script type="module" src="./index.js"></script>
+</body>
+</html>

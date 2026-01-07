@@ -1,0 +1,74 @@
+# ========================
+# Rust / Cargo
+# ========================
+# ビルド生成物（巨大なので絶対にコミットしない）
+/target/
+
+# バックアップファイルなど
+**/*.rs.bk
+
+# Cargo.lock はライブラリ開発なら無視することもありますが、
+# 今回はアプリケーション/PoCとしての再現性を重視するためコミットします。
+# (無視したい場合は下の行の # を外してください)
+# Cargo.lock
+
+# ========================
+# Python
+# ========================
+# バイトコード
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C拡張モジュール (MaturinでビルドされたRustライブラリ本体)
+*.so
+*.pyd
+*.dylib
+
+# 配布用ビルドアーティファクト
+dist/
+build/
+*.egg-info/
+
+# 仮想環境 (uv venv)
+.venv/
+venv/
+env/
+ENV/
+
+# テスト・型チェックキャッシュ
+.pytest_cache/
+.mypy_cache/
+
+# ========================
+# WebAssembly / Frontend
+# ========================
+# wasm-pack によって自動生成されるファイル群
+# (ソースコードからいつでも再生成できるためコミット不要)
+www/pkg/
+
+# npm を使うようになった場合の依存ライブラリ
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ========================
+# OS / IDE / Editors
+# ========================
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# VS Code
+.vscode/
+
+# IntelliJ / PyCharm
+.idea/
+
+# Vim / Emacs
+*~
+*.swp

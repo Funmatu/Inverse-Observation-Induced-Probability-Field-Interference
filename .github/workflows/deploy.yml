@@ -1,0 +1,80 @@
+name: Deploy to GitHub Pages
+
+on:
+  # mainブランチにpushされたら実行
+  push:
+    branches: ["main"]
+  # ブラウザから手動で実行したい時用
+  workflow_dispatch:
+
+permissions:
+  contents: write # gh-pagesブランチへの書き込み権限
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Rust環境のセットアップ (キャッシュも効く現代的なAction)
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      # wasm-packのインストール
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      # ビルド実行 (Releaseモードで最適化)
+      - name: Build WASM
+        # ハイブリッド構成なので、Web用フラグ(--features wasm)を明示的にONにする
+        run: wasm-pack build --target web --out-dir www/pkg --no-default-features --features wasm
+      
+      # CIサーバー上でのみ ルートと、pkg内部のgitignoreの両方を抹殺する。
+      # これにより、ユーザーのローカル環境は汚さずに、生成された pkg フォルダを強制的に認識させる。
+      - name: Remove .gitignore to allow deploying pkg
+        run: |
+          rm -f .gitignore
+          rm -f www/pkg/.gitignore
+      
+      # Jekyll処理を無効化するファイルを作成
+      - name: Create .nojekyll
+        run: touch www/.nojekyll
+
+      # GitHub Pagesへのデプロイ
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./www # このフォルダの中身を公開する
+          force_orphan: true # 履歴を溜め込まず、常に最新版だけで上書きする（軽量化）
+
+# ======================================================================================
+#  [Reference] Python CI Job
+#  将来的にPythonモジュールの自動テストが必要になった場合、以下のコメントを解除してjobsに追加してください。
+#  (ローカルのUV環境で十分な場合は不要です)
+# ======================================================================================
+#   test-python:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
+#
+#       - name: Set up Python
+#         uses: actions/setup-python@v5
+#         with:
+#           python-version: '3.10'
+#
+#       # Python側でもRustコンパイラは必要
+#       - name: Install Rust
+#         uses: dtolnay/rust-toolchain@stable
+#
+#       - name: Install Maturin
+#         run: pip install maturin
+#
+#       - name: Build and Test Python Module
+#         # Releaseビルドでテストする場合、--release を追加してください
+#         run: |
+#           maturin develop --features python
+#           python -c "import nx_compute_rs; print(f'Test Result: {nx_compute_rs.compute_metrics(1000, 1.0)}')"

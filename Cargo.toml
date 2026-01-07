@@ -1,0 +1,32 @@
+[package]
+name = "nx-compute-rs"
+version = "0.1.0"
+edition = "2021"
+authors = ["R&D Researcher <your.email@example.com>"]
+description = "A dual-runtime computation core for WebAssembly and Python, powered by Rust."
+
+[lib]
+name = "nx_compute_rs"
+crate-type = ["cdylib"]
+
+[features]
+default = ["wasm"]
+wasm = ["dep:wasm-bindgen"]
+python = ["dep:pyo3"]
+
+[dependencies]
+# Common dependencies (Math, etc.)
+serde = { version = "1.0", features = ["derive"] }
+
+# Feature: WebAssembly
+wasm-bindgen = { version = "0.2", optional = true }
+
+# Feature: Python
+pyo3 = { version = "0.20", features = ["extension-module"], optional = true }
+
+rayon = "1.10"
+
+[profile.release]
+lto = true
+opt-level = 3
+codegen-units = 1
