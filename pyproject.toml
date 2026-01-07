@@ -3,7 +3,7 @@ requires = ["maturin>=1.0,<2.0"]
 build-backend = "maturin"
 
 [project]
-name = "nx_compute_rs"
+name = "Inverse_Observation_Induced_Probability_Field_Interference"
 requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Rust",

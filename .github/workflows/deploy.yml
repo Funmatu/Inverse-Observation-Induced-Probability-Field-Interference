@@ -77,4 +77,4 @@ jobs:
 #         # Releaseビルドでテストする場合、--release を追加してください
 #         run: |
 #           maturin develop --features python
-#           python -c "import nx_compute_rs; print(f'Test Result: {nx_compute_rs.compute_metrics(1000, 1.0)}')"
+#           python -c "import Inverse_Observation_Induced_Probability_Field_Interference; print(f'Test Result: {Inverse_Observation_Induced_Probability_Field_Interference.compute_metrics(1000, 1.0)}')"

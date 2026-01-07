@@ -1,27 +1,31 @@
-import init, { compute_metrics_js } from './pkg/nx_compute_rs.js';
+import init, { QuantumRenderer } from './pkg/inverse_observation_induced_probability_field_interference.js';
 
 async function run() {
-    await init(); // Initialize WASM
+    await init();
     
-    const btn = document.getElementById('run-btn');
-    const output = document.getElementById('output');
+    const btn = document.getElementById('start-btn');
+    const canvas = document.getElementById('quantum-canvas');
     
-    btn.innerText = "Run Core Algorithm (10M iters)";
-    btn.disabled = false;
-
-    btn.addEventListener('click', () => {
-        output.innerText = "Computing...";
+    btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        btn.innerText = "Quantum Coherence Established";
         
-        // Use setTimeout to allow UI to update before blocking main thread
-        setTimeout(() => {
-            const start = performance.now();
+        try {
+            // Rust側のWGPU初期化
+            const renderer = await QuantumRenderer.new("quantum-canvas");
             
-            // Call Rust function
-            const result = compute_metrics_js(10_000_000n, 1.5);
+            function loop() {
+                renderer.update(); // 物理更新
+                renderer.render(); // 描画
+                requestAnimationFrame(loop);
+            }
+            requestAnimationFrame(loop);
             
-            const end = performance.now();
-            output.innerText = `Result: ${result.toFixed(6)}\nTime: ${(end - start).toFixed(2)} ms`;
-        }, 10);
+        } catch (e) {
+            console.error(e);
+            alert("WebGPU not supported or error initializing: " + e);
+            btn.disabled = false;
+        }
     });
 }
 

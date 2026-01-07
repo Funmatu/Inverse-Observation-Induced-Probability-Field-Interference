@@ -1,154 +1,80 @@
-# Nexus Compute RS: Dual-Runtime R&D Architecture
+# 6D Quantum Gaussian Splatting
 
-![Build Status](https://github.com/Funmatu/nx-compute-rs/actions/workflows/deploy.yml/badge.svg)
-![Rust](https://img.shields.io/badge/Language-Rust-orange.svg)
-![Platform](https://img.shields.io/badge/Platform-WASM%20%7C%20Python-blue.svg)
+[![CI/CD](https://github.com/Funmatu/Inverse-Observation-Induced-Probability-Field-Interference/actions/workflows/deploy.yml/badge.svg)](https://funmatu.github.io/Inverse-Observation-Induced-Probability-Field-Interference/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Nexus Compute RS** is a rigorous proof-of-concept template designed for R&D in Physical AI and Robotics. It implements a "Write Once, Run Everywhere" strategy for high-performance algorithms, bridging the gap between web-based visualization/sharing and Python-based rigorous analysis/backend processing.
+![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![WebAssembly](https://img.shields.io/badge/WebAssembly-654FF0?style=for-the-badge&logo=webassembly&logoColor=white)
 
-## 1. Architectural Philosophy
+![WGPU](https://img.shields.io/badge/GPU-WGPU%20Compute-blueviolet?style=flat-square&logo=webgpu&logoColor=white)
+![PyO3](https://img.shields.io/badge/Bindings-PyO3-blue?style=flat-square)
+![Maturin](https://img.shields.io/badge/Build-Maturin-green?style=flat-square)
 
-In modern R&D, we often face a dilemma:
-* **Python** is required for data analysis, ML integration (PyTorch), and ROS2 interfacing.
-* **Web (JavaScript)** is required for easy sharing, visualization, and zero-setup demos.
-* **Performance** is critical for SLAM, Optimization, and Simulation.
+![Platform](https://img.shields.io/badge/platform-Web%20%7C%20Linux%20%7C%20macOS%20%7C%20Windows-lightgrey)
 
-This project solves this by implementing the core logic in **Rust**, which is then compiled into two distinct targets via Feature Flags:
+**A Proof of Concept for Inverse Observation-Induced Probability Field Interference.**
 
-```mermaid
-graph TD
-    subgraph "Core Logic (Rust)"
-        Alg[Algorithm / Physics / Math]
-    end
+This project explores a novel SLAM architecture inspired by Quantum Mechanics and the concept of "Temporal Pincer Movements". Instead of filtering current observations to estimate position, we model the environment as a field of observers that project "probability waves" back into the space. The convergence of these waves (Constructive Interference) defines the agent's existence.
 
-    subgraph "Target: Web (WASM)"
-        WB[wasm-bindgen]
-        JS[JavaScript / Browser]
-        Alg --> WB --> JS
-    end
+## 1. Theoretical Foundation
 
-    subgraph "Target: Python (Native)"
-        PyO3[PyO3 Bindings]
-        Py[Python Environment]
-        Alg --> PyO3 --> Py
-    end
-```
+### 1.1 Inverse Observation Model
+Traditional SLAM solves $P(x | z)$ (Probability of pose $x$ given measurement $z$).
+We invert this: The environment consists of anchors $L_i$ that "observe" the agent. Each anchor emits a spherical probability wave $\Psi_i(x)$ based on the measured distance $d_i$.
 
-## 2. Project Structure
+$$
+\Psi(x) = \sum_{i} A_i \cdot e^{i (k |x - L_i| - \phi_i)}
+$$
 
-```text
-nx-compute-rs/
-├── .github/workflows/   # CI/CD for automatic WASM deployment & Python testing
-├── src/
-│   └── lib.rs           # The SINGLE source of truth. Contains core logic + bindings.
-├── www/                 # The Web Frontend (HTML/JS)
-│   ├── index.html
-│   ├── index.js
-│   └── pkg/             # Generated WASM artifacts (by CI)
-├── Cargo.toml           # Rust configuration (defines 'wasm' and 'python' features)
-├── pyproject.toml       # Python build configuration (Maturin)
-└── README.md            # This document
-```
+* **Constructive Interference:** Where waves align, probability density $|\Psi|^2$ spikes. This is the estimated position.
+* **Destructive Interference:** Elsewhere, waves cancel out, naturally suppressing noise and "ghost" solutions.
 
-## 3. Usage Guide
+### 1.2 Feedback (Temporal Entanglement)
+We introduce a 6th dimension (Time/Causality) by feeding the *past* probability field back into the *current* estimation.
 
-### A. As a Python Library (For Analysis/Backend)
+$$
+P_{t}(x) = (1 - \alpha)|\Psi_{t}(x)|^2 + \alpha P_{t-1}(x)
+$$
 
-You can use the Rust core as a native Python extension. This provides near-C++ performance within your Python scripts.
+This creates a "World Tube" where the agent's existence is stabilized by its own history, preventing instant tracking loss (teleportation).
 
-**Prerequisites:**
-* Rust toolchain (`rustup`)
-* Python 3.8+
-* `pip install maturin`
+## 2. Architecture
 
-**Setup & Run:**
-```bash
-# 1. Build and install into current venv
-maturin develop --release --features python
+This repository uses a **Dual-Runtime Architecture** powered by Rust.
 
-# 2. Run in Python
-python -c "import nx_compute_rs; print(nx_compute_rs.compute_metrics(10000000, 1.5))"
-# python -c "import numpy as np; i = np.arange(10000000); x = i * np.pi / 180.0 * 1.5; print(np.sum(np.sin(x) * np.cos(x)))"
-# python -m timeit -s "import nx_compute_rs" "nx_compute_rs.compute_metrics(10000000, 1.5)"
-# python -m timeit -s "import numpy as np" "i = np.arange(10000000); x = i * np.pi / 180.0 * 1.5; np.sum(np.sin(x) * np.cos(x))"
-```
+| Component | Tech Stack | Role |
+|-----------|------------|------|
+| **Core Physics** | Rust (CPU) | Exact math verification, unit testing. |
+| **Visualization** | Rust + WGPU (Compute Shader) | Real-time interference simulation, massive parallelization. |
+| **Analysis** | Python (PyO3) | Automated testing of interference properties. |
+| **Web Demo** | WASM + WebGPU | Browser-based interactive visualization. |
 
-## Optional: Paralell vs Serial vs NumPy
-```bash
-python -c "
-import nx_compute_rs
-import numpy as np
-import timeit
+## 3. Implementation Details
 
-# 1. Rust Serial (直列)
-t_serial = timeit.timeit(
-    'nx_compute_rs.compute_metrics(10000000, 1.5, False)', 
-    setup='import nx_compute_rs', 
-    number=10
-)
+### Compute Shader (`shader.wgsl`)
+The heart of the simulation. It runs on the GPU, calculating complex wave summation for every pixel in parallel.
+* **Ping-Pong Buffering:** Used to read the previous frame's probability texture while writing to the current one, enabling the temporal feedback loop.
+* **Complex Math:** Standard WGSL `float` operations are combined to simulate complex number arithmetic (Phase/Amplitude).
 
-# 2. Rust Parallel (並列)
-t_parallel = timeit.timeit(
-    'nx_compute_rs.compute_metrics(10000000, 1.5, True)', 
-    setup='import nx_compute_rs', 
-    number=10
-)
+### Hybrid Rust Crate (`lib.rs`)
+* **`QuantumSlamCore`:** A pure CPU implementation of the interference formula. Exposed to Python for `pytest`.
+* **`QuantumRenderer`:** A WGPU wrapper handling the device, queue, and swapchain for WebAssembly.
 
-# 3. NumPy (ベクトル化)
-t_numpy = timeit.timeit(
-    'x = np.arange(10000000) * np.pi / 180.0 * 1.5; np.sum(np.sin(x) * np.cos(x))', 
-    setup='import numpy as np', 
-    number=10
-)
+## 4. Running the Demo
 
-print(f'Rust (Serial):   {t_serial/10*1000:.2f} ms')
-print(f'Rust (Parallel): {t_parallel/10*1000:.2f} ms')
-print(f'NumPy:           {t_numpy/10*1000:.2f} ms')
-"
-```
+### Web (Visualization)
+Requires a browser with **WebGPU** support (Chrome/Edge 113+).
 
-### B. As a Web Application (For Demo/Sharing)
+1.  `wasm-pack build --target web --features wasm`
+2.  Serve the `www` directory.
 
-You can run the same logic in the browser via WebAssembly.
+### Python (Verification)
+1.  `maturin develop --features python`
+2.  `pytest test_core.py`
 
-**Prerequisites:**
-* `wasm-pack` (`curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh`)
-
-**Setup & Run:**
-```bash
-# 1. Build WASM blob
-wasm-pack build --target web --out-dir www/pkg --no-default-features --features wasm
-
-# 2. Serve locally (using Python's http server for simplicity)
-cd www
-python3 -m http.server 8000
-# Open http://localhost:8000
-```
-
-## 4. Technical Details
-
-### Feature Flags Strategy
-We use `Cargo.toml` features to minimize binary size and dependencies.
-* **`features = ["wasm"]`**: Includes `wasm-bindgen`. Generates `.wasm` binary. Panics happen in JS console.
-* **`features = ["python"]`**: Includes `pyo3`. Generates `.so/.pyd` shared library. Python exception handling enabled.
-
-### Performance Considerations
-* **Zero-Cost Abstraction:** Rust's iterators and logic compile down to optimized machine code (simd instructions where applicable) for Python, and optimized bytecode for WASM.
-* **Memory Safety:** No manual memory management (malloc/free) required, preventing segfaults in Python extensions.
-* **GIL (Global Interpreter Lock):** The Rust code runs outside Python's GIL. For multi-threaded logic, Rust can utilize all CPU cores while Python is blocked, offering true parallelism.
-
-## 5. Deployment
-
-This repository uses **GitHub Actions** to automatically deploy the Web version.
-1.  Push to `main`.
-2.  Action triggers: Compiles Rust to WASM.
-3.  Deploys `www/` folder to **GitHub Pages**.
-
-## 6. Future Roadmap
-
-* **GPU Acceleration:** Integrate `wgpu` for portable GPU compute shaders (WebGPU + Vulkan/Metal).
-* **Serialization:** Add `serde` support to pass complex JSON/Structs between JS/Python and Rust.
-* **Sim2Real:** Port the Python bindings directly to a ROS2 node.
+## 5. Future Work: The "Temporal Pincer Movements" Algorithm
+Currently, the feedback is $t-1 \to t$. The next step is to implement **Bi-directional Time Optimization**:
+Using loop closures (future information) to propagate probability waves *backwards* in time ($t+k \to t$), collapsing the wave function of past uncertain states.
 
 ---
-*Author: Funmatu*
